@@ -140,7 +140,13 @@ export default {
         details: error?.details || null,
         hint: error?.hint || null
       });
-      return json({ error: 'Gagal mengakses database Supabase. Periksa konfigurasi dan struktur tabel.' }, 500);
+      return json({
+        error: 'Diagnostik Supabase',
+        message: error?.message || 'Unknown error',
+        code: error?.code || null,
+        details: error?.details || null,
+        hint: error?.hint || null
+      }, 500);
     }
   }
 };
