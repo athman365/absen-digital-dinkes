@@ -2,11 +2,15 @@
   "name": "absen-digital-dinkes",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "start": "node server.js" },
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",
-    "csv-parse": "^5.6.0",
-    "express": "^4.21.2",
-    "multer": "^1.4.5-lts.1"
+    "csv-parse": "^5.6.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
   }
 }
