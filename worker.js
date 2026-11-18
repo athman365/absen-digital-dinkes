@@ -39,9 +39,31 @@ export default {
       return json({ error: 'Konfigurasi Worker belum lengkap. Periksa Environment Variables.' }, 500);
     }
     let diagnosticStage = 'inisialisasi Supabase client';
+    let supabaseHttpDiagnostic = null;
     try {
       const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false }
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: {
+          fetch: async (input, init) => {
+            try {
+              const response = await fetch(input, init);
+              let responseBody = '';
+              try { responseBody = await response.clone().text(); } catch {}
+              supabaseHttpDiagnostic = {
+                status: response.status,
+                statusText: response.statusText,
+                body: responseBody.slice(0, 1200)
+              };
+              return response;
+            } catch (fetchError) {
+              supabaseHttpDiagnostic = {
+                fetchError: String(fetchError),
+                name: fetchError?.name || null
+              };
+              throw fetchError;
+            }
+          }
+        }
       });
       const requireAuth = async () => await authorized(request, env.TOKEN_SECRET);
       if (url.pathname === '/api/login' && request.method === 'POST') {
@@ -138,6 +160,7 @@ export default {
     } catch (error) {
       console.error('API error detail', {
         stage: diagnosticStage,
+        supabaseHttpDiagnostic,
         message: error?.message ?? null,
         messageType: typeof error?.message,
         serializedError: (() => { try { return JSON.stringify(error); } catch { return null; } })(),
