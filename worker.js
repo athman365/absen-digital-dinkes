@@ -38,6 +38,7 @@ export default {
     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY || !env.ADMIN_PASSWORD || !env.TOKEN_SECRET) {
       return json({ error: 'Konfigurasi Worker belum lengkap. Periksa Environment Variables.' }, 500);
     }
+    let diagnosticStage = 'inisialisasi Supabase client';
     try {
       const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
         auth: { persistSession: false, autoRefreshToken: false }
@@ -49,6 +50,7 @@ export default {
         return json({ token: await makeToken(env.TOKEN_SECRET) });
       }
       if (url.pathname === '/api/summary' && request.method === 'GET') {
+        diagnosticStage = 'membaca tabel pegawai dan apel';
         const [p, a] = await Promise.all([
           supabase.from('pegawai').select('id', { count: 'exact', head: true }),
           supabase.from('apel').select('id,nama_apel,tanggal,jam_mulai').order('created_at', { ascending: false }).limit(1).maybeSingle()
@@ -57,6 +59,7 @@ export default {
         if (a.error) throw a.error;
         let hadir = 0;
         if (a.data) {
+          diagnosticStage = 'membaca tabel kehadiran';
           const k = await supabase.from('kehadiran').select('id', { count: 'exact', head: true }).eq('apel_id', a.data.id);
           if (k.error) throw k.error;
           hadir = k.count || 0;
@@ -135,7 +138,10 @@ export default {
       return json({ error:'Endpoint tidak ditemukan' }, 404);
     } catch (error) {
       console.error('API error detail', {
-        message: error?.message || null,
+        stage: diagnosticStage,
+        message: error?.message ?? null,
+        messageType: typeof error?.message,
+        serializedError: (() => { try { return JSON.stringify(error); } catch { return null; } })(),
         errorString: String(error),
         errorType: typeof error,
         errorName: error?.name || null,
@@ -146,7 +152,10 @@ export default {
       });
       return json({
         error: 'Diagnostik Supabase',
-        message: error?.message || String(error) || 'Unknown error',
+        stage: diagnosticStage,
+        message: error?.message ?? null,
+        messageType: typeof error?.message,
+        serializedError: (() => { try { return JSON.stringify(error); } catch { return null; } })(),
         errorType: typeof error,
         errorName: error?.name || null,
         errorString: String(error),
