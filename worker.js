@@ -50,12 +50,11 @@ export default {
         return json({ token: await makeToken(env.TOKEN_SECRET) });
       }
       if (url.pathname === '/api/summary' && request.method === 'GET') {
-        diagnosticStage = 'membaca tabel pegawai dan apel';
-        const [p, a] = await Promise.all([
-          supabase.from('pegawai').select('id', { count: 'exact', head: true }),
-          supabase.from('apel').select('id,nama_apel,tanggal,jam_mulai').order('created_at', { ascending: false }).limit(1).maybeSingle()
-        ]);
+        diagnosticStage = 'membaca tabel pegawai';
+        const p = await supabase.from('pegawai').select('id', { count: 'exact', head: true });
         if (p.error) throw p.error;
+        diagnosticStage = 'membaca tabel apel';
+        const a = await supabase.from('apel').select('id,nama_apel,tanggal,jam_mulai').order('created_at', { ascending: false }).limit(1).maybeSingle();
         if (a.error) throw a.error;
         let hadir = 0;
         if (a.data) {
