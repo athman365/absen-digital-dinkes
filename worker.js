@@ -38,11 +38,11 @@ export default {
     if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY || !env.ADMIN_PASSWORD || !env.TOKEN_SECRET) {
       return json({ error: 'Konfigurasi Worker belum lengkap. Periksa Environment Variables.' }, 500);
     }
-    const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false }
-    });
-    const requireAuth = async () => await authorized(request, env.TOKEN_SECRET);
     try {
+      const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false }
+      });
+      const requireAuth = async () => await authorized(request, env.TOKEN_SECRET);
       if (url.pathname === '/api/login' && request.method === 'POST') {
         const body = await request.json();
         if (body.password !== env.ADMIN_PASSWORD) return json({ error: 'Password salah' }, 401);
@@ -146,10 +146,14 @@ export default {
       });
       return json({
         error: 'Diagnostik Supabase',
-        message: error?.message || 'Unknown error',
+        message: error?.message || String(error) || 'Unknown error',
+        errorType: typeof error,
+        errorName: error?.name || null,
+        errorString: String(error),
         code: error?.code || null,
         details: error?.details || null,
-        hint: error?.hint || null
+        hint: error?.hint || null,
+        keys: error && typeof error === 'object' ? Object.keys(error) : []
       }, 500);
     }
   }
