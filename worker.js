@@ -175,6 +175,7 @@ export default {
       return json({
         error: 'Diagnostik Supabase',
         stage: diagnosticStage,
+        supabaseHttpDiagnostic,
         message: error?.message ?? null,
         messageType: typeof error?.message,
         serializedError: (() => { try { return JSON.stringify(error); } catch { return null; } })(),
