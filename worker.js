@@ -134,7 +134,12 @@ export default {
       }
       return json({ error:'Endpoint tidak ditemukan' }, 404);
     } catch (error) {
-      console.error('API error:', error);
+      console.error('API error detail', {
+        message: error?.message || 'Unknown error',
+        code: error?.code || null,
+        details: error?.details || null,
+        hint: error?.hint || null
+      });
       return json({ error: 'Gagal mengakses database Supabase. Periksa konfigurasi dan struktur tabel.' }, 500);
     }
   }
