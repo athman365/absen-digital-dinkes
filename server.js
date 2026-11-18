@@ -91,9 +91,9 @@ app.post('/api/scan', auth, async (req, res) => {
 });
 app.get('/api/attendance/:eventId', auth, async (req, res) => {
   try {
-    const { data, error } = await supabase.from('kehadiran').select('waktu_scan,pegawai:pegawai_id(nip,nama,jabatan,unit_kerja)').eq('apel_id',req.params.eventId).order('waktu_scan',{ascending:false});
+    const { data, error } = await supabase.from('kehadiran').select('waktu_scan,pegawai:pegawai_id(nip,nama,unit_kerja)').eq('apel_id',req.params.eventId).order('waktu_scan',{ascending:false});
     if(error) throw error;
-    res.json(data.map(r => ({ nip:r.pegawai?.nip || '', name:r.pegawai?.nama || '', position:r.pegawai?.jabatan || '', unit:r.pegawai?.unit_kerja || '', scanned_at:r.waktu_scan })));
+    res.json(data.map(r => ({ nip:r.pegawai?.nip || '', name:r.pegawai?.nama || '', unit:r.pegawai?.unit_kerja || '', scanned_at:r.waktu_scan })));
   } catch(e) { fail(res,e); }
 });
 app.get('/api/export/:eventId', auth, async (req, res) => {
