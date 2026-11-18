@@ -135,10 +135,14 @@ export default {
       return json({ error:'Endpoint tidak ditemukan' }, 404);
     } catch (error) {
       console.error('API error detail', {
-        message: error?.message || 'Unknown error',
+        message: error?.message || null,
+        errorString: String(error),
+        errorType: typeof error,
+        errorName: error?.name || null,
         code: error?.code || null,
         details: error?.details || null,
-        hint: error?.hint || null
+        hint: error?.hint || null,
+        keys: error && typeof error === 'object' ? Object.keys(error) : []
       });
       return json({
         error: 'Diagnostik Supabase',
