@@ -102,6 +102,15 @@ export default {
         if (error) throw error;
         return json({ id:data.id, title:data.nama_apel, event_date:data.tanggal, start_time:data.jam_mulai, status:data.status });
       }
+      const deleteEventMatch = url.pathname.match(/^\/api\/events\/(\d+)$/);
+      if (deleteEventMatch && request.method === 'DELETE') {
+        const eventId = deleteEventMatch[1];
+        const { error: attendanceError } = await supabase.from('kehadiran').delete().eq('apel_id', eventId);
+        if (attendanceError) throw attendanceError;
+        const { error: eventError } = await supabase.from('apel').delete().eq('id', eventId);
+        if (eventError) throw eventError;
+        return json({ ok: true, deleted: eventId });
+      }
       if (url.pathname === '/api/employees/import' && request.method === 'POST') {
         const form = await request.formData();
         const file = form.get('file');
